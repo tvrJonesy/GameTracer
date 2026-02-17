@@ -57,15 +57,15 @@ try:
                     
                     # 3. Rename Videos
                     for side, sel in [("Left", selected_left), ("Right", selected_right)]:
-    file_id = drive_files[sel]
-                    # We update the metadata without creating a new file 'copy'
-                    # This keeps the original owner (YOU) so it doesn't hit the 0-byte quota
-                    f = drive.CreateFile({'id': file_id})
-                    f.FetchMetadata() 
-                    f['title'] = f"{match_id}_{side}.mp4"
+                        file_id = drive_files[sel]
+                        # We update the metadata without creating a new file 'copy'
+                        # This keeps the original owner (YOU) so it doesn't hit the 0-byte quota
+                        f = drive.CreateFile({'id': file_id})
+                        f.FetchMetadata() 
+                        f['title'] = f"{match_id}_{side}.mp4"
                     
-                    # CRITICAL: We tell the API NOT to change the owner
-                    f.Upload(param={'supportsAllDrives': True})    
+                        # CRITICAL: We tell the API NOT to change the owner
+                        f.Upload(param={'supportsAllDrives': True})    
                     
                     # 4. Signal Colab
                     sig = drive.CreateFile({'title': 'START_SIGNAL.txt', 'parents': [{'id': DRIVE_FOLDER_ID}]})
