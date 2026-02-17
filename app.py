@@ -5,7 +5,7 @@ import json
 import pandas as pd
 
 # --- CONFIG ---
-DRIVE_FOLDER_ID = "YOUR_FOLDER_ID_HERE"  # Update this!
+DRIVE_FOLDER_ID = "14TMFY4tb6byRO_ipspgv0g1PzAojm98D"  # Update this!
 SERVICE_ACCOUNT_FILE = "service_secrets.json"
 
 st.set_page_config(page_title="GameTracer Hub", page_icon="⚽", layout="wide")
