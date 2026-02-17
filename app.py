@@ -5,7 +5,7 @@ import json
 import pandas as pd
 
 # CONFIG
-DRIVE_FOLDER_ID = "YOUR_GOOGLE_DRIVE_FOLDER_ID"
+DRIVE_FOLDER_ID = "14TMFY4tb6byRO_ipspgv0g1PzAojm98D"
 
 st.set_page_config(page_title="GameTracer Pro", page_icon="⚽", layout="wide")
 
