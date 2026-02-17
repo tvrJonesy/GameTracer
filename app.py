@@ -10,10 +10,17 @@ DRIVE_FOLDER_ID = "14TMFY4tb6byRO_ipspgv0g1PzAojm98D"
 st.set_page_config(page_title="GameTracer Pro", page_icon="⚽", layout="wide")
 
 def get_drive():
-    gauth = GoogleAuth()
-    gauth.LocalWebserverAuth()
+    # settings dictionary tells pydrive2 to use the Service Account
+    settings = {
+        "client_config_backend": "service",
+        "service_config": {
+            "client_json_file_path": "service_secrets.json",
+        }
+    }
+    gauth = GoogleAuth(settings=settings)
+    gauth.ServiceAuth() # This logs in silently!
     return GoogleDrive(gauth)
-
+    
 st.title("⚽ GameTracer: Tactical Hub")
 
 try:
