@@ -3,6 +3,7 @@ from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive
 import json
 import pandas as pd
+import os
 
 # CONFIG
 DRIVE_FOLDER_ID = "14TMFY4tb6byRO_ipspgv0g1PzAojm98D"
@@ -43,43 +44,40 @@ try:
         sel_l = st.selectbox("Left Camera", ["-- Select --"] + filenames)
         sel_r = st.selectbox("Right Camera", ["-- Select --"] + filenames)
         
-        if st.button("🔥 START AI ENGINE", type="primary", use_container_width=True):
-            if sel_l != "-- Select --" and sel_r != "-- Select --":
-                with st.status("Syncing Data...") as s:
-                    # 1. Save Team Sheet to JSON
-                    team_dict = dict(zip(edited_df['#'].astype(str), edited_df['Name']))
-                    with open("teams.json", "w") as f: json.dump(team_dict, f)
-                    
-                    # 2. Upload Team Sheet
-                    ts_file = drive.CreateFile({'title': f"{match_id}_teams.json", 'parents': [{'id': DRIVE_FOLDER_ID}]})
-                    ts_file.SetContentFile("teams.json")
-                    ts_file.Upload()
-                    
-                    # 3. Rename Videos
-                    for side, sel in [("Left", selected_left), ("Right", selected_right)]:
-                        file_id = drive_files[sel]
-                        # We update the metadata without creating a new file 'copy'
-                        # This keeps the original owner (YOU) so it doesn't hit the 0-byte quota
-                        f = drive.CreateFile({'id': file_id})
-                        f.FetchMetadata() 
-                        f['title'] = f"{match_id}_{side}.mp4"
-                    
-                        # CRITICAL: We tell the API NOT to change the owner
-                        f.Upload(param={'supportsAllDrives': True})    
-                    
-                    # 4. Signal Colab
-                    sig = drive.CreateFile({'title': 'START_SIGNAL.txt', 'parents': [{'id': DRIVE_FOLDER_ID}]})
-                    sig.SetContentString(match_id)
-                    sig.Upload()
-                    s.update(label="AI Processing Started!", state="complete")
+    if st.button("🔥 START AI ENGINE", type="primary", use_container_width=True):
+        if selected_left != "-- Select --" and selected_right != "-- Select --":
+            with st.status("🚀 Processing...") as s:
+                # A. RENAME VIDEOS (Metadata Update - Doesn't use robot quota)
+                for side, sel in [("Left", selected_left), ("Right", selected_right)]:
+                    f_id = drive_files[sel]
+                    f = drive.CreateFile({'id': f_id})
+                    f.FetchMetadata() 
+                    f['title'] = f"{match_id}_{side}.mp4"
+                    f.Upload(param={'supportsAllDrives': True}) 
+            
+                # B. UPDATE SIGNAL (Finds the file YOU created and edits it)
+                query = f"'{DRIVE_FOLDER_ID}' in parents and title = 'START_SIGNAL.txt'"
+                signals = drive.ListFile({'q': query}).GetList()
+            
+            if signals:
+                start_sig = signals[0]
+                start_sig.SetContentString(match_id)
+                start_sig.Upload(param={'supportsAllDrives': True})
+                s.update(label="Engine Engaged!", state="complete")
+            else:
+                st.error("⚠️ Error: START_SIGNAL.txt not found. Create it manually in Drive!")
             else:
                 st.error("Please assign both cameras.")
 
     st.divider()
-    if st.button("🛑 EMERGENCY STOP (SAVE CREDITS)", type="secondary"):
-        stop_file = drive.CreateFile({'title': 'STOP_SIGNAL.txt', 'parents': [{'id': DRIVE_FOLDER_ID}]})
-        stop_file.SetContentString("KILL"); stop_file.Upload()
-        st.warning("Stop signal sent.")
+    if st.button("🛑 STOP RESOURCE USAGE", type="secondary"):
+        query = f"'{DRIVE_FOLDER_ID}' in parents and title = 'STOP_SIGNAL.txt'"
+        signals = drive.ListFile({'q': query}).GetList()
+        if signals:
+            stop_sig = signals[0]
+            stop_sig.SetContentString("SHUTDOWN")
+            stop_sig.Upload(param={'supportsAllDrives': True})
+            st.warning("Shutdown signal sent.")
 
 except Exception as e:
     st.error(f"Waiting for Drive Auth: {e}")
