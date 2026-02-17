@@ -66,8 +66,7 @@ try:
                 s.update(label="Engine Engaged!", state="complete")
             else:
                 st.error("⚠️ Error: START_SIGNAL.txt not found. Create it manually in Drive!")
-            else:
-                st.error("Please assign both cameras.")
+
 
     st.divider()
     if st.button("🛑 STOP RESOURCE USAGE", type="secondary"):
